@@ -1,0 +1,102 @@
+{
+  "name": "TrainingJob",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "Name of the training job"
+    },
+    "dataset": {
+      "type": "string",
+      "enum": [
+        "cifar10",
+        "cifar100",
+        "imagenet",
+        "coco",
+        "voc",
+        "mnist",
+        "fashion_mnist",
+        "custom"
+      ],
+      "description": "Selected dataset"
+    },
+    "dataset_custom_url": {
+      "type": "string",
+      "description": "URL for custom dataset if selected"
+    },
+    "model": {
+      "type": "string",
+      "enum": [
+        "resnet18",
+        "resnet50",
+        "resnet101",
+        "vgg16",
+        "vgg19",
+        "efficientnet_b0",
+        "efficientnet_b4",
+        "mobilenet_v3",
+        "vit_base",
+        "vit_large",
+        "swin_transformer",
+        "convnext"
+      ],
+      "description": "Selected model architecture"
+    },
+    "server_type": {
+      "type": "string",
+      "enum": [
+        "own_server",
+        "cloud_recommendation"
+      ],
+      "description": "Whether user has own server or needs recommendation"
+    },
+    "server_host": {
+      "type": "string",
+      "description": "Server hostname or IP"
+    },
+    "server_port": {
+      "type": "string",
+      "description": "Server SSH port"
+    },
+    "server_gpu": {
+      "type": "string",
+      "description": "GPU type on the server"
+    },
+    "checkpoint_path": {
+      "type": "string",
+      "description": "Path to save model checkpoints"
+    },
+    "epochs": {
+      "type": "number",
+      "default": 100,
+      "description": "Number of training epochs"
+    },
+    "batch_size": {
+      "type": "number",
+      "default": 32,
+      "description": "Training batch size"
+    },
+    "learning_rate": {
+      "type": "number",
+      "default": 0.001,
+      "description": "Learning rate"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "draft",
+        "configured",
+        "running",
+        "completed",
+        "failed"
+      ],
+      "default": "draft",
+      "description": "Current status of the training job"
+    }
+  },
+  "required": [
+    "name",
+    "dataset",
+    "model"
+  ]
+}
