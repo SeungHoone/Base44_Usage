@@ -29,6 +29,11 @@ export default function Dashboard() {
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["training-jobs"] })
   });
 
+  const statusMutation = useMutation({
+    mutationFn: ({ id, status }) => base44.entities.TrainingJob.update(id, { status }),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["training-jobs"] })
+  });
+
   const stats = {
     total: jobs.length,
     configured: jobs.filter((j) => j.status === "configured").length,
@@ -121,7 +126,12 @@ export default function Dashboard() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.3, delay: i * 0.05 }}
               >
-                <JobCard job={job} onDelete={(id) => deleteMutation.mutate(id)} onClick={() => setSelectedJob(job)} />
+                <JobCard
+                  job={job}
+                  onDelete={(id) => deleteMutation.mutate(id)}
+                  onClick={() => setSelectedJob(job)}
+                  onStatusChange={(id, status) => statusMutation.mutate({ id, status })}
+                />
               </motion.div>
             ))}
           </div>
