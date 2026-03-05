@@ -1,9 +1,9 @@
-import React, { useState } from "react";
+import React from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
-import { ExternalLink, Activity, BarChart2, Info, CheckCircle2, XCircle, Clock, Loader2, FileText, ExternalLink as ExtLink } from "lucide-react";
+import { BarChart2, CheckCircle2, XCircle, Clock, Loader2, FileText } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 import { datasetInfo } from "@/components/training/DatasetCard";
@@ -17,7 +17,6 @@ const statusConfig = {
   failed: { label: "Failed", color: "bg-red-500/20 text-red-400 border-red-500/30", icon: XCircle },
 };
 
-// Generate mock training curves for demo — in production these would come from the DB
 function generateMockCurves(epochs = 100, status) {
   if (status === "configured" || status === "draft") return null;
   const total = status === "running" ? Math.floor(epochs * 0.6) : epochs;
@@ -43,14 +42,6 @@ export default function JobDetailModal({ job, open, onClose }) {
   const status = statusConfig[job.status] || statusConfig.draft;
   const StatusIcon = status.icon;
   const curves = generateMockCurves(job.epochs || 100, job.status);
-  const lastEpoch = curves ? curves[curves.length - 1] : null;
-
-  const monitoringTools = [
-    { name: "Weights & Biases", url: "https://wandb.ai", desc: "Real-time metrics, system stats, model artifacts", color: "from-yellow-500 to-amber-400" },
-    { name: "TensorBoard", url: "https://tensorboard.dev", desc: "Loss/accuracy curves, histograms, profiler", color: "from-orange-500 to-red-400" },
-    { name: "MLflow", url: "https://mlflow.org", desc: "Experiment tracking and model registry", color: "from-blue-500 to-cyan-400" },
-    { name: "ClearML", url: "https://clear.ml", desc: "Auto-logging, comparison, pipelines", color: "from-violet-500 to-purple-400" },
-  ];
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
@@ -75,10 +66,9 @@ export default function JobDetailModal({ job, open, onClose }) {
           </div>
         </DialogHeader>
 
-        <Tabs defaultValue={curves ? "results" : "monitor"} className="w-full">
+        <Tabs defaultValue="results" className="w-full">
           <TabsList className="mx-6 mt-4 bg-white/5 border border-white/10">
             <TabsTrigger value="results" className="data-[state=active]:bg-white/10 text-xs">Results & Graphs</TabsTrigger>
-            <TabsTrigger value="monitor" className="data-[state=active]:bg-white/10 text-xs">Live Monitoring</TabsTrigger>
             <TabsTrigger value="info" className="data-[state=active]:bg-white/10 text-xs">Config</TabsTrigger>
           </TabsList>
 
@@ -87,16 +77,15 @@ export default function JobDetailModal({ job, open, onClose }) {
             {!curves ? (
               <div className="text-center py-12 text-slate-500">
                 <BarChart2 className="w-10 h-10 mx-auto mb-3 opacity-30" />
-                <p className="text-sm">No training data yet — job has not started</p>
+                <p className="text-sm">No training data yet — start training this job to see results</p>
               </div>
             ) : (
               <>
-                {/* Summary metrics */}
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                   {[
-                    { label: "Best Val Acc", value: lastEpoch ? `${Math.max(...curves.map(c => c.valAcc)).toFixed(2)}%` : "—", color: "text-emerald-400" },
-                    { label: "Final Val Loss", value: lastEpoch ? lastEpoch.valLoss.toFixed(4) : "—", color: "text-blue-400" },
-                    { label: "Final Train Acc", value: lastEpoch ? `${lastEpoch.trainAcc.toFixed(1)}%` : "—", color: "text-violet-400" },
+                    { label: "Best Val Acc", value: `${Math.max(...curves.map(c => c.valAcc)).toFixed(2)}%`, color: "text-emerald-400" },
+                    { label: "Final Val Loss", value: curves[curves.length - 1].valLoss.toFixed(4), color: "text-blue-400" },
+                    { label: "Final Train Acc", value: `${curves[curves.length - 1].trainAcc.toFixed(1)}%`, color: "text-violet-400" },
                     { label: "Epochs Done", value: curves.length, color: "text-amber-400" },
                   ].map((m) => (
                     <div key={m.label} className="rounded-xl border border-white/10 bg-white/[0.03] p-4">
@@ -109,13 +98,12 @@ export default function JobDetailModal({ job, open, onClose }) {
                 {job.status === "running" && (
                   <div className="flex items-center gap-2 rounded-xl border border-amber-500/20 bg-amber-500/5 px-4 py-3">
                     <Loader2 className="w-4 h-4 text-amber-400 animate-spin shrink-0" />
-                    <p className="text-xs text-amber-300">Training in progress — graphs show data up to the current epoch. Refresh to update.</p>
+                    <p className="text-xs text-amber-300">Training in progress — graphs show data up to the current epoch.</p>
                   </div>
                 )}
 
-                {/* Accuracy curve */}
                 <div>
-                  <p className="text-xs font-semibold text-white mb-3">Accuracy</p>
+                  <p className="text-xs font-semibold text-white mb-3">Accuracy per Epoch</p>
                   <ResponsiveContainer width="100%" height={220}>
                     <LineChart data={curves} margin={{ top: 4, right: 4, bottom: 4, left: -10 }}>
                       <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
@@ -129,9 +117,8 @@ export default function JobDetailModal({ job, open, onClose }) {
                   </ResponsiveContainer>
                 </div>
 
-                {/* Loss curve */}
                 <div>
-                  <p className="text-xs font-semibold text-white mb-3">Loss</p>
+                  <p className="text-xs font-semibold text-white mb-3">Loss per Epoch</p>
                   <ResponsiveContainer width="100%" height={220}>
                     <LineChart data={curves} margin={{ top: 4, right: 4, bottom: 4, left: -10 }}>
                       <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
@@ -146,40 +133,6 @@ export default function JobDetailModal({ job, open, onClose }) {
                 </div>
               </>
             )}
-          </TabsContent>
-
-          {/* Monitor tab */}
-          <TabsContent value="monitor" className="px-6 pb-6 pt-4 space-y-4">
-            <p className="text-xs text-slate-400">
-              Connect one of these tools to your training script to get real-time metrics, GPU stats, and alerts. Each tool provides a pip package — add a few lines to your train.py.
-            </p>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              {monitoringTools.map((t) => (
-                <a key={t.name} href={t.url} target="_blank" rel="noopener noreferrer"
-                  className="group flex items-start gap-3 rounded-xl border border-white/10 bg-white/[0.02] p-4 hover:border-white/20 hover:bg-white/[0.04] transition-all">
-                  <div className={cn("w-8 h-8 rounded-lg bg-gradient-to-br flex items-center justify-center shrink-0", t.color)}>
-                    <Activity className="w-4 h-4 text-white" />
-                  </div>
-                  <div className="min-w-0">
-                    <div className="flex items-center gap-1">
-                      <p className="text-sm font-semibold text-white">{t.name}</p>
-                      <ExternalLink className="w-3 h-3 text-slate-600 group-hover:text-slate-400 transition-colors" />
-                    </div>
-                    <p className="text-xs text-slate-400 mt-0.5">{t.desc}</p>
-                  </div>
-                </a>
-              ))}
-            </div>
-            <div className="rounded-xl border border-white/5 bg-white/[0.02] p-4">
-              <p className="text-xs text-slate-500 font-mono">
-                <span className="text-violet-400"># Quick start with wandb</span><br />
-                pip install wandb<br />
-                <span className="text-slate-400">import wandb</span><br />
-                wandb.init(project=<span className="text-emerald-400">"{job.name}"</span>)<br />
-                <span className="text-slate-400"># then log each epoch:</span><br />
-                wandb.log(<span className="text-amber-400">{"{"}"loss": loss, "acc": acc{"}"}</span>)
-              </p>
-            </div>
           </TabsContent>
 
           {/* Config tab */}
