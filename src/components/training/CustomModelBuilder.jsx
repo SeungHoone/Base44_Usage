@@ -197,21 +197,7 @@ export default function CustomModelBuilder({ customModel, onChange }) {
         </div>
       </div>
 
-      {/* Optimization Settings — only shown in "extend" mode here; for scratch, it lives in step 3 (TrainingParams) */}
-      {mode === "extend" && (
-        <OptimizationSettings
-          config={{
-            optimizer: customModel.optimizer,
-            scheduler: customModel.scheduler,
-            loss_fn: customModel.loss_fn,
-            weight_decay: customModel.weight_decay,
-            warmup_epochs: customModel.warmup_epochs,
-            grad_clip: customModel.grad_clip,
-            label_smoothing: customModel.label_smoothing,
-          }}
-          onChange={(updates) => onChange({ ...customModel, ...updates })}
-        />
-      )}
+
     </div>
   );
 }
