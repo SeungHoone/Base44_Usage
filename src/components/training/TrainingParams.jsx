@@ -44,7 +44,7 @@ export default function TrainingParams({ config, onChange }) {
         </div>
 
         <div className="space-y-2">
-          <Label className="text-xs text-slate-400">Initial Learning Rate</Label>
+          <Label className="text-xs text-slate-400">(Initial) Learning Rate</Label>
           <Input
             type="number"
             step="0.0001"
