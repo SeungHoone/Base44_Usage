@@ -14,6 +14,7 @@ import DatasetCard, { datasetInfo } from "@/components/training/DatasetCard";
 import ModelCard, { modelInfo } from "@/components/training/ModelCard";
 import ServerConfig from "@/components/training/ServerConfig";
 import TrainingParams from "@/components/training/TrainingParams";
+import OptimizationSettings from "@/components/training/OptimizationSettings";
 import JobSummary from "@/components/training/JobSummary";
 import CustomModelBuilder from "@/components/training/CustomModelBuilder";
 
@@ -40,7 +41,8 @@ export default function NewTraining() {
 
   const [selectedModels, setSelectedModels] = useState([]);
   const [useCustomModel, setUseCustomModel] = useState(false);
-  const [customModel, setCustomModel] = useState({ mode: "scratch", layers: [], optimizer: "Adam", scheduler: "CosineAnnealing", loss_fn: "CrossEntropyLoss" });
+  const [customModel, setCustomModel] = useState({ mode: "scratch", layers: [], optimizer: "Adam", scheduler: "CosineAnnealing", loss_fn: "CrossEntropyLoss", weight_decay: 0.0001, warmup_epochs: 5, grad_clip: 1.0, label_smoothing: 0.1 });
+  const [optimizationConfig, setOptimizationConfig] = useState({ optimizer: "Adam", scheduler: "CosineAnnealing", loss_fn: "CrossEntropyLoss", weight_decay: 0.0001, warmup_epochs: 5, grad_clip: 1.0, label_smoothing: 0.1 });
 
   // Per-combination params: key = "dataset|model", value = { epochs, batch_size, learning_rate }
   const [paramsMap, setParamsMap] = useState({});
@@ -243,6 +245,11 @@ export default function NewTraining() {
                       className="bg-white/5 border-white/10 text-white placeholder:text-slate-600 text-lg"
                     />
                   </div>
+
+                  <OptimizationSettings
+                    config={optimizationConfig}
+                    onChange={(updates) => setOptimizationConfig((p) => ({ ...p, ...updates }))}
+                  />
 
                   {combinations.length <= 1 ? (
                     combinations.map(({ dataset, model }) => (
