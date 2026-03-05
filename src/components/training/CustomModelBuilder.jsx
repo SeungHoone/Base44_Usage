@@ -1,18 +1,18 @@
 import React, { useState } from "react";
 import { cn } from "@/lib/utils";
 import { modelInfo } from "./ModelCard";
-import { Plus, Trash2, ChevronDown, ChevronUp, Wand2, Layers, Cpu, Zap } from "lucide-react";
+import { Plus, Trash2, ChevronDown, ChevronUp, Wand2, Layers, Cpu } from "lucide-react";
+import OptimizationSettings from "./OptimizationSettings";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+// OptimizationSettings imported above
 import BaseModelViewer from "./BaseModelViewer";
 
 const BASE_MODELS = ["resnet50", "resnet101", "efficientnet_b0", "efficientnet_b4", "vit_base", "swin_transformer", "convnext", "mobilenet_v3"];
 const LAYER_TYPES = ["Conv2D", "BatchNorm2D", "ReLU", "MaxPool2D", "AvgPool2D", "Linear", "Dropout", "GELU", "Sigmoid", "Softmax", "MultiHeadAttention", "LayerNorm"];
-const OPTIMIZERS = ["Adam", "AdamW", "SGD", "RMSprop", "Adadelta", "Adagrad", "LAMB"];
-const SCHEDULERS = ["CosineAnnealing", "StepLR", "ReduceOnPlateau", "OneCycleLR", "WarmupCosine", "PolynomialDecay"];
-const LOSS_FNS = ["CrossEntropyLoss", "BCELoss", "BCEWithLogitsLoss", "MSELoss", "FocalLoss", "DiceLoss", "HuberLoss"];
+
 
 function LayerRow({ layer, index, onUpdate, onRemove, onMoveUp, onMoveDown, isFirst, isLast }) {
   const [expanded, setExpanded] = useState(false);
@@ -197,66 +197,21 @@ export default function CustomModelBuilder({ customModel, onChange }) {
         </div>
       </div>
 
-      {/* Optimizer / Scheduler / Loss */}
-      <div className="rounded-2xl border border-white/10 bg-white/[0.02] p-5 space-y-4">
-        <h4 className="text-sm font-semibold text-white flex items-center gap-2">
-          <Zap className="w-4 h-4 text-amber-400" />
-          Optimization Settings
-        </h4>
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          <div className="space-y-2">
-            <Label className="text-xs text-slate-400">Optimizer</Label>
-            <Select value={customModel.optimizer || "Adam"} onValueChange={(v) => onChange({ ...customModel, optimizer: v })}>
-              <SelectTrigger className="bg-white/5 border-white/10 text-white text-xs">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {OPTIMIZERS.map(o => <SelectItem key={o} value={o}>{o}</SelectItem>)}
-              </SelectContent>
-            </Select>
-          </div>
-          <div className="space-y-2">
-            <Label className="text-xs text-slate-400">LR Scheduler</Label>
-            <Select value={customModel.scheduler || "CosineAnnealing"} onValueChange={(v) => onChange({ ...customModel, scheduler: v })}>
-              <SelectTrigger className="bg-white/5 border-white/10 text-white text-xs">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {SCHEDULERS.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
-              </SelectContent>
-            </Select>
-          </div>
-          <div className="space-y-2">
-            <Label className="text-xs text-slate-400">Loss Function</Label>
-            <Select value={customModel.loss_fn || "CrossEntropyLoss"} onValueChange={(v) => onChange({ ...customModel, loss_fn: v })}>
-              <SelectTrigger className="bg-white/5 border-white/10 text-white text-xs">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {LOSS_FNS.map(l => <SelectItem key={l} value={l}>{l}</SelectItem>)}
-              </SelectContent>
-            </Select>
-          </div>
-        </div>
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-          <div className="space-y-2">
-            <Label className="text-xs text-slate-400">Weight Decay</Label>
-            <Input type="number" step="0.0001" value={customModel.weight_decay || 0.0001} onChange={(e) => onChange({ ...customModel, weight_decay: parseFloat(e.target.value) })} className="bg-white/5 border-white/10 text-white font-mono text-xs h-8" />
-          </div>
-          <div className="space-y-2">
-            <Label className="text-xs text-slate-400">Warmup Epochs</Label>
-            <Input type="number" step="1" value={customModel.warmup_epochs || 5} onChange={(e) => onChange({ ...customModel, warmup_epochs: parseInt(e.target.value) })} className="bg-white/5 border-white/10 text-white font-mono text-xs h-8" />
-          </div>
-          <div className="space-y-2">
-            <Label className="text-xs text-slate-400">Gradient Clip</Label>
-            <Input type="number" step="0.1" value={customModel.grad_clip || 1.0} onChange={(e) => onChange({ ...customModel, grad_clip: parseFloat(e.target.value) })} className="bg-white/5 border-white/10 text-white font-mono text-xs h-8" />
-          </div>
-          <div className="space-y-2">
-            <Label className="text-xs text-slate-400">Label Smoothing</Label>
-            <Input type="number" step="0.01" value={customModel.label_smoothing || 0.1} onChange={(e) => onChange({ ...customModel, label_smoothing: parseFloat(e.target.value) })} className="bg-white/5 border-white/10 text-white font-mono text-xs h-8" />
-          </div>
-        </div>
-      </div>
+      {/* Optimization Settings — only shown in "extend" mode here; for scratch, it lives in step 3 (TrainingParams) */}
+      {mode === "extend" && (
+        <OptimizationSettings
+          config={{
+            optimizer: customModel.optimizer,
+            scheduler: customModel.scheduler,
+            loss_fn: customModel.loss_fn,
+            weight_decay: customModel.weight_decay,
+            warmup_epochs: customModel.warmup_epochs,
+            grad_clip: customModel.grad_clip,
+            label_smoothing: customModel.label_smoothing,
+          }}
+          onChange={(updates) => onChange({ ...customModel, ...updates })}
+        />
+      )}
     </div>
   );
 }
