@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { cn } from "@/lib/utils";
-import { Server, Cloud, ExternalLink, Monitor, Wifi, HardDrive, Code2, BookOpen, Copy, Check, Download } from "lucide-react";
+import { Server, Cloud, ExternalLink, Monitor, Wifi, HardDrive, Code2, Play, Copy, Check, Download } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
@@ -308,10 +308,10 @@ export default function ServerConfig({ config, onChange }) {
       {/* Server Type Selection */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {[
-          { key: "own_server", Icon: Server, gradient: "from-emerald-500 to-green-400", title: "I have a server", sub: "Configure your own GPU server" },
+          { key: "browser", Icon: Play, gradient: "from-emerald-500 to-teal-400", title: "Run in Browser", sub: "Simulate training right here, no setup needed" },
+          { key: "own_server", Icon: Server, gradient: "from-slate-500 to-slate-400", title: "I have a server", sub: "Configure your own GPU server" },
           { key: "cloud_recommendation", Icon: Cloud, gradient: "from-blue-500 to-cyan-400", title: "Rent a cloud GPU", sub: "Get cloud provider recommendations" },
           { key: "get_code", Icon: Code2, gradient: "from-violet-500 to-fuchsia-400", title: "Get the code", sub: "Export ready-to-run training scripts" },
-          { key: "notebook", Icon: BookOpen, gradient: "from-amber-500 to-orange-400", title: "Run in notebook", sub: "Colab, Kaggle, JupyterLab, VS Code…" },
         ].map(({ key, Icon, gradient, title, sub }) => (
           <button
             key={key}
@@ -331,6 +331,24 @@ export default function ServerConfig({ config, onChange }) {
           </button>
         ))}
       </div>
+
+      {/* Browser training info */}
+      {serverType === "browser" && (
+        <div className="rounded-2xl border border-emerald-500/20 bg-emerald-500/5 p-6 space-y-3">
+          <h3 className="text-sm font-semibold text-white flex items-center gap-2">
+            <Play className="w-4 h-4 text-emerald-400" />
+            In-Browser Training
+          </h3>
+          <p className="text-xs text-slate-400 leading-relaxed">
+            Training will run as a live simulation directly in your browser — no server, no GPU, no setup required. You'll see real-time accuracy and loss curves epoch by epoch. Perfect for validating your configuration before committing to a real training run.
+          </p>
+          <div className="flex flex-wrap gap-2 mt-1">
+            {["No GPU needed", "Live graphs", "Instant start", "Saves to dashboard"].map(tag => (
+              <span key={tag} className="text-[10px] font-semibold text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded-full">{tag}</span>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Own Server */}
       {serverType === "own_server" && (
@@ -438,26 +456,6 @@ export default function ServerConfig({ config, onChange }) {
         </div>
       )}
 
-      {/* Notebook options */}
-      {serverType === "notebook" && (
-        <div className="space-y-4">
-          <div>
-            <h3 className="text-sm font-semibold text-white flex items-center gap-2 mb-1">
-              <BookOpen className="w-4 h-4 text-amber-400" />
-              Choose your Notebook Environment
-            </h3>
-            <p className="text-xs text-slate-500">Cloud environments open in your browser. Local environments (VS Code, JupyterLab) will attempt to launch directly on your machine.</p>
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-            {notebookOptions.map((nb) => (
-              <NotebookCard key={nb.key} nb={nb} />
-            ))}
-          </div>
-          <div className="rounded-xl border border-amber-500/20 bg-amber-500/5 p-4 text-xs text-amber-300">
-            A ready-to-run <span className="font-mono font-semibold">.ipynb</span> notebook with all your config baked in will be available on the Review step.
-          </div>
-        </div>
-      )}
     </div>
   );
 }
