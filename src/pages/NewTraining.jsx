@@ -43,6 +43,7 @@ export default function NewTraining() {
   const [useCustomModel, setUseCustomModel] = useState(false);
   const [customModel, setCustomModel] = useState({ mode: "scratch", layers: [], optimizer: "Adam", scheduler: "CosineAnnealing", loss_fn: "CrossEntropyLoss", weight_decay: 0.0001, warmup_epochs: 5, grad_clip: 1.0, label_smoothing: 0.1 });
   const [optimizationConfig, setOptimizationConfig] = useState({ optimizer: "Adam", scheduler: "CosineAnnealing", loss_fn: "CrossEntropyLoss", weight_decay: 0.0001, warmup_epochs: 5, grad_clip: 1.0, label_smoothing: 0.1 });
+  const [useOptimization, setUseOptimization] = useState(false);
 
   // Per-combination params: key = "dataset|model", value = { epochs, batch_size, learning_rate }
   const [paramsMap, setParamsMap] = useState({});
@@ -246,10 +247,28 @@ export default function NewTraining() {
                     />
                   </div>
 
-                  <OptimizationSettings
-                    config={optimizationConfig}
-                    onChange={(updates) => setOptimizationConfig((p) => ({ ...p, ...updates }))}
-                  />
+                  <div className="rounded-2xl border border-white/10 bg-white/[0.02] overflow-hidden">
+                    <button
+                      onClick={() => setUseOptimization((v) => !v)}
+                      className="w-full flex items-center justify-between px-5 py-4 text-left hover:bg-white/[0.02] transition-colors"
+                    >
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm font-semibold text-white">Optimization Settings</span>
+                        <span className="text-[10px] text-slate-500">(optional)</span>
+                      </div>
+                      <span className={cn("text-xs font-semibold px-2 py-0.5 rounded-full transition-colors", useOptimization ? "text-amber-400 bg-amber-400/10" : "text-slate-500 bg-white/5")}>
+                        {useOptimization ? "Enabled" : "Default"}
+                      </span>
+                    </button>
+                    {useOptimization && (
+                      <div className="px-5 pb-5">
+                        <OptimizationSettings
+                          config={optimizationConfig}
+                          onChange={(updates) => setOptimizationConfig((p) => ({ ...p, ...updates }))}
+                        />
+                      </div>
+                    )}
+                  </div>
 
                   {combinations.length <= 1 ? (
                     combinations.map(({ dataset, model }) => (
