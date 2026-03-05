@@ -7,10 +7,12 @@ import { createPageUrl } from "@/utils";
 import { motion } from "framer-motion";
 import JobCard from "@/components/dashboard/JobCard";
 import JobDetailModal from "@/components/dashboard/JobDetailModal";
+import InBrowserTraining from "@/components/dashboard/InBrowserTraining";
 
 export default function Dashboard() {
   const queryClient = useQueryClient();
   const [selectedJob, setSelectedJob] = useState(null);
+  const [trainingJob, setTrainingJob] = useState(null);
 
   useEffect(() => {
     base44.auth.me().then((user) => {
@@ -130,7 +132,10 @@ export default function Dashboard() {
                   job={job}
                   onDelete={(id) => deleteMutation.mutate(id)}
                   onClick={() => setSelectedJob(job)}
-                  onStatusChange={(id, status) => statusMutation.mutate({ id, status })}
+                  onStatusChange={(id, _status) => {
+                    const job = jobs.find(j => j.id === id);
+                    setTrainingJob(job);
+                  }}
                 />
               </motion.div>
             ))}
@@ -138,6 +143,15 @@ export default function Dashboard() {
         )}
       </div>
       <JobDetailModal job={selectedJob} open={!!selectedJob} onClose={() => setSelectedJob(null)} />
+      <InBrowserTraining
+        job={trainingJob}
+        open={!!trainingJob}
+        onClose={() => setTrainingJob(null)}
+        onFinished={() => {
+          setTrainingJob(null);
+          queryClient.invalidateQueries({ queryKey: ["training-jobs"] });
+        }}
+      />
     </div>
   );
 }
